@@ -1,0 +1,40 @@
+npm install standard --save-dev: es para definir unos estandares para codear ejemplo
+utiliza comillas simples para los string no es necesario utilizar ;
+
+npm install babel-eslint --save-dev:para que standar reconosca las funcionalidades de 
+emascript 
+
+npm install ava --save-dev: para realizar los test de prueba
+
+npm install rethinkdb --save
+
+
+const r = require('rethinkdb')
+
+test.after('desconectando base de datos', async t => {
+  await db.disconnect()
+  t.false(db.connected, 'esta desconectado')
+})
+
+test.after.always('borrar la base de datos', async t => {
+  let conn = await r.connect({})
+  await r.dbDrop(dbName).run(conn)
+})
+
+
+
+
+  let image = {
+    url: `http://senagram.test/${uuid.v4()}.jpg`,
+    likes: 0,
+    liked: false,
+    user_id: uuid.uuid()
+  }
+
+  let created = await db.guardarImagen(image)
+  t.is(created.url, image.url)
+  t.is(created.likes, image.likes)
+  t.is(created.liked, image.liked)
+  t.is(created.user_id, image.user_id)
+  t.is(typeof created.user_id, 'string')
+  t.truthy(created.createdAt)
