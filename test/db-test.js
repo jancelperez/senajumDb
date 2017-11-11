@@ -39,9 +39,9 @@ test('guardar imagen', async t => {
   t.is(created.likes, imagen.likes)
   t.is(created.liked, imagen.liked)
   t.deepEqual(created.tags, ['genial', 'tags', 'senagram'])
-  t.is(created.user_id, imagen.user_id)
+  t.is(created.userId, imagen.userId)
   t.is(typeof created.id, 'string')
-  t.is(created.public_id, uuid.encode(created.id))
+  t.is(created.publicId, uuid.encode(created.id))
   t.truthy(created.createdAt)
 })
 
@@ -51,7 +51,7 @@ test('like imagenes', async t => {
 
   let imagen = fixtures.getImage()
   let created = await db.guardarImagen(imagen)
-  let result = await db.likeImagen(created.public_id)
+  let result = await db.likeImagen(created.publicId)
   t.true(result.liked)
   t.is(result.likes, imagen.likes + 1)
 })
@@ -62,7 +62,7 @@ test('obtener imagen', async t => {
 
   let imagen = fixtures.getImage()
   let created = await db.guardarImagen(imagen)
-  let result = await db.getImagen(created.public_id)
+  let result = await db.getImagen(created.publicId)
 
   t.deepEqual(created, result)
 
@@ -127,4 +127,28 @@ test('autenticar usuario', async t => {
 
   let falla = await db.autenticar('jaa', 'bar')
   t.false(falla)
+})
+
+test('listar fotos por usuario', async t => {
+  let db = t.context.db
+
+  t.is(typeof db.getImagenesPorUsuario, 'function', 'getImagenesPorUsuario es una funcion')
+
+  let imagenes = fixtures.getImages(10)
+  let userId = uuid.uuid()
+  let random = Math.round(Math.random() * imagenes.length)
+
+  let guardarImagenes = []
+  for (let i = 0; i < imagenes.length; i++) {
+    if (i < random) {
+      imagenes[i].userId = userId
+    }
+
+    guardarImagenes.push(db.guardarImagen(imagenes[i]))
+  }
+
+  await Promise.all(guardarImagenes)
+
+  let result = await db.getImagenesPorUsuario(userId)
+  t.is(result.length, random)
 })
