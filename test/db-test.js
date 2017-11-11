@@ -9,7 +9,7 @@ const fixtures = require('./fixtures')
 
 test.beforeEach('configurar base de datos', async t => {
   const dbName = `senagram_${uuid.v4()}`
-  const db = new Db({db: dbName})
+  const db = new Db({db: dbName, setup: true})
   await db.connect()
   t.context.db = db
   t.context.dbName = dbName
@@ -150,5 +150,29 @@ test('listar fotos por usuario', async t => {
   await Promise.all(guardarImagenes)
 
   let result = await db.getImagenesPorUsuario(userId)
+  t.is(result.length, random)
+})
+
+test('listar imagenes por tag', async t => {
+  let db = t.context.db
+
+  t.is(typeof db.getImagenesPorTag, 'function', 'getImagenesPorTag es una funcion')
+
+  let imagenes = fixtures.getImages(10)
+  let tag = '#filtre'
+  let random = Math.round(Math.random() * imagenes.length)
+
+  let guardarImagenes = []
+  for (let i = 0; i < imagenes.length; i++) {
+    if (i < random) {
+      imagenes[i].description = tag
+    }
+
+    guardarImagenes.push(db.guardarImagen(imagenes[i]))
+  }
+
+  await Promise.all(guardarImagenes)
+
+  let result = await db.getImagenesPorTag(tag)
   t.is(result.length, random)
 })
